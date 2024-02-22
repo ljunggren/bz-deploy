@@ -1,0 +1,62 @@
+- name: Install Node.js 20.x
+  block:
+    - name: Add NodeSource repository
+      ansible.builtin.shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }} | sudo -E bash -
+
+    - name: Install Node.js
+      ansible.builtin.apt:
+        name: nodejs
+        update_cache: yes
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Allow HTTP/HTTPS traffic through the firewall
+  ansible.builtin.ufw:
+    rule: allow
+    name: "Nginx Full"
+
+- name: Configure Nginx as a reverse proxy
+  block:
+    - name: Remove default Nginx site configuration
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Create Nginx configuration for Node.js application
+      ansible.builtin.template:
+        src: nodejs_nginx.conf.j2
+        dest: "/etc/nginx/sites-available/{{ domain_name }}.conf"
+
+    - name: Enable Nginx site configuration
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ domain_name }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ domain_name }}.conf"
+        state: link
+
+    - name: Reload Nginx to apply changes
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+
+- name: Install Certbot and request Let's Encrypt certificate
+  block:
+    - name: Install Certbot and Nginx plugin
+      ansible.builtin.apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    - name: Obtain SSL certificate
+      ansible.builtin.shell: |
+        certbot --nginx -d {{ domain_name }} --non-interactive --agree-tos -m administrator@boozang.com --redirect
+
+- name: Ensure Certbot auto-renewal is configured
+  ansible.builtin.cron:
+    name: "Certbot Renewal"
+    job: "certbot renew --quiet"
+    special_time: daily

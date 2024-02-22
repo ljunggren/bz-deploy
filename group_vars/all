@@ -1,0 +1,21 @@
+# GitHub credentials
+
+github_username: "ljunggren"  # Replace with your GitHub username
+github_repository: "ljunggren/bz-dist"  # Replace with your GitHub username and repository
+
+
+# NodeJS
+
+nodejs_version: "20.x"
+app_directory: "/var/www/nodejs_app"
+nodejs_app_port: 3000
+
+# Ports
+
+ssh_port: 21
+nginx_ssl_port: 443
+
+# SSH Keys
+
+ssh_key_directory: "/home/ubuntu/.ssh"
+ssh_key_filename: "id_github"

@@ -1,0 +1,72 @@
+- name: Update all packages to their latest versions
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install Uncomplicated Firewall (UFW)
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: Allow SSH connections
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+
+- name: Allow HTTP connections
+  ansible.builtin.ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Allow HTTPS connections
+  ansible.builtin.ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Enable firewall
+  ansible.builtin.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Disable root SSH login
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+
+- name: Restart sshd to apply changes
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+
+- name: Install unattended-upgrades package
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+
+- name: Configure automatic security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+          "${distro_id}:${distro_codename}";
+          "${distro_id}:${distro_codename}-security";
+          "${distro_id}ESMApps:${distro_codename}-apps-security";
+          "${distro_id}ESM:${distro_codename}-infra-security";
+      };
+      Unattended-Upgrade::Package-Blacklist {
+      };
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "02:00";

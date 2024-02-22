@@ -1,0 +1,31 @@
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Setup Nginx server block for Node.js app using a template
+  ansible.builtin.template:
+    src: nginx_nodejs_proxy.j2
+    dest: /etc/nginx/sites-available/nodejs_app
+  notify: restart nginx
+
+- name: Enable Nginx server block
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/nodejs_app
+    dest: /etc/nginx/sites-enabled/nodejs_app
+    state: link
+  notify: restart nginx
+
+# Task to restart Nginx to apply configuration changes
+- name: restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

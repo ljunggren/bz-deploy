@@ -1,0 +1,24 @@
+- name: Download Node.js 20 setup script
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/setup_20.x
+    dest: /tmp/setup_nodejs_20.sh
+    mode: '0755'
+
+- name: Run Node.js 20 setup script
+  ansible.builtin.shell: /tmp/setup_nodejs_20.sh
+  args:
+    removes: /tmp/setup_nodejs_20.sh  # Clean up script after execution
+
+- name: Install Node.js 20
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Check Node.js version
+  ansible.builtin.command: node --version
+  register: node_version
+
+- name: Display Node.js version
+  ansible.builtin.debug:
+    msg: "Installed Node.js version: {{ node_version.stdout }}"

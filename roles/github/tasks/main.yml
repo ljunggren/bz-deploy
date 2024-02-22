@@ -1,0 +1,31 @@
+- name: Install Git (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: git
+    state: present
+  become: yes
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install Git (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: git
+    state: present
+  become: yes
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path: "~/.ssh"
+    state: directory
+    mode: '0700'
+  become_user: ubuntu
+
+- name: Generate an SSH key pair
+  community.crypto.openssh_keypair:
+    path: "/home/ubuntu/.ssh/id_rsa"
+    size: 2048  # Key size, adjust as needed
+  register: ssh_key
+  become_user: ubuntu
+
+- name: Display the public key
+  debug:
+    var: ssh_key.public_key

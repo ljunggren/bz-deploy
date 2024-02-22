@@ -1,0 +1,11 @@
+---
+- name: Deploy Node.js app with Nginx and Let's Encrypt on Ubuntu 22.04
+  hosts: staging
+  become: yes
+  roles:
+    - setup
+    - nginx
+    - https
+    - nodejs
+    - github
+    - application

@@ -1,0 +1,80 @@
+- name: Create a directory
+  file:
+    path: "/var/www/bz-dist"  # Specify the directory path
+    state: directory
+    owner: ubuntu  # Specify the username
+    group: ubuntu  # Specify the user group
+    mode: '0755'  # Set the directory permissions
+
+- name: Create a directory
+  file:
+    path: "/var/www/bz-web-file"  # Specify the directory path
+    state: directory
+    owner: ubuntu  # Specify the username
+    group: ubuntu  # Specify the user group
+    mode: '0755'  # Set the directory permissions
+
+- name: Install Forever alternative
+  command: "npm install pm2 -g"
+  tags: pm2
+
+- name: Stop forever processes if running
+  tags: deploy, fastdeploy, restart
+  command: pm2 stop all
+  ignore_errors: yes
+  become_user: ubuntu
+
+
+- name: Fetch the application source
+  tags: deploy, fastdeploy
+  git: repo={{ git_repo }} dest={{ path_to_app }} accept_hostkey=yes force=yes version={{ branch }}
+  become_user: ubuntu
+
+
+- name: Update packages based on package.json to their latest version.
+  tags: deploy
+  npm: path={{ path_to_app }} state=latest production=yes
+  become_user: ubuntu
+
+
+- name: Slurp version file
+  tags: deploy, fastdeploy, version
+  slurp:
+    src: "{{ path_to_app }}/VERSION"
+  register: versionfile
+  become_user: ubuntu
+
+
+- debug: msg="{{ versionfile['content'] | b64decode | trim }}"
+  tags: deploy, fastdeploy, version
+  become_user: ubuntu
+
+
+- name: Ensures /var/www/bz-web-file/ide/js dir exists
+  tags: deploy, fastdeploy, version
+  file: path=/var/www/bz-web-file/ide/js/{{versionfile['content'] | b64decode | trim}} state=directory
+  become_user: ubuntu
+
+
+- name: Ansible copy files remote to remote
+  tags: deploy, fastdeploy, version
+  copy:
+    src: /var/www/bz-dist/public/ide/js/std/
+    dest: /var/www/bz-web-file/ide/js/{{versionfile['content'] | b64decode | trim}}
+    remote_src: yes
+  become_user: ubuntu
+
+
+- name: Start Node.js app
+  tags: deploy, fastdeploy, restart
+  command: pm2 start server.js
+  args:
+    chdir: "{{ path_to_app }}"
+  environment:
+    NODE_ENV: "{{ node_env }}"
+  become_user: ubuntu
+
+
+
+
+
