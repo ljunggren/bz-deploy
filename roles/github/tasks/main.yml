@@ -19,12 +19,12 @@
     mode: '0700'
   become_user: ubuntu
 
-- name: Generate an SSH key pair
-  community.crypto.openssh_keypair:
-    path: "/home/ubuntu/.ssh/id_rsa"
-    size: 2048  # Key size, adjust as needed
-  register: ssh_key
-  become_user: ubuntu
+# - name: Generate an SSH key pair
+#   community.crypto.openssh_keypair:
+#     path: "/home/ubuntu/.ssh/id_rsa"
+#     size: 2048  # Key size, adjust as needed
+#   register: ssh_key
+#   become_user: ubuntu
 
 - name: Display the public key
   debug:
