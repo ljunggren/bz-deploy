@@ -3,7 +3,7 @@ host_dns_name: staging-bh.boozang.com
 server_name: staging-bh.boozang.com
 
 # Staging configuration
-node_env: staging-bh
+# node_env: staging-bh
 
 git_repo: ssh://git@github.com/ljunggren/bz-dist
 path_to_app: /var/www/bz-dist
