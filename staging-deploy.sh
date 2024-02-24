@@ -1,1 +1,1 @@
-ansible-playbook -i inventory.ini site.yml --tags=deploy
+ansible-playbook -i inventories/staging-bh site.yml --tags=deploy

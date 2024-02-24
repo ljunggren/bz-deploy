@@ -1,5 +1,0 @@
-[traffic]
-stg1bh.boozang.com
-
-[ovh-staging-be:children]
-traffic

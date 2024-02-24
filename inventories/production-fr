@@ -1,0 +1,6 @@
+[production-fr]
+prd1fr.boozang.com ansible_ssh_user=ubuntu
+
+[production-fr:vars]
+ansible_python_interpreter=/usr/bin/python3
+node_env=production-fr

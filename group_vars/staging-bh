@@ -1,0 +1,8 @@
+# Config for all envs
+
+git_repo: ssh://git@github.com/ljunggren/bz-dist
+path_to_app: /var/www/bz-dist
+
+# Deployment branch in bz-dist
+
+branch: master
