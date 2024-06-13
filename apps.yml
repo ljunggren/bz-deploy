@@ -1,0 +1,62 @@
+---
+- name: Setup Application Environment
+  hosts: management-bh
+  become: yes  # Use sudo
+  vars:
+    directory: /var/www/examples
+    git_repos:
+      - { repo: 'https://github.com/karinlj/boozang-thelab', name: 'thelab'}
+      - { repo: 'https://github.com/karinlj/my-portfolio-new', name: 'portfolio'}
+      # - { repo: 'https://github.com/ljunggren/bz-api', name: 'api'}
+      - { repo: 'https://github.com/ljunggren/bz-docs', name: 'docs'}
+
+    nginx_conf_path: /etc/nginx/sites-available
+    nginx_conf_link_path: /etc/nginx/sites-enabled
+
+  tasks:
+    - name: Create a directory for repositories
+      file:
+        path: "{{ directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone repositories
+      git:
+        repo: "{{ item.repo }}"
+        dest: "{{ directory }}/{{ item.name }}"
+      loop: "{{ git_repos }}"
+
+    - name: Set up Nginx configurations for applications
+      template:
+        src: templates/nginx-app.conf.j2
+        dest: "{{ nginx_conf_path }}/{{ item.name }}"
+      loop: "{{ git_repos }}"
+      notify:
+        - reload nginx
+
+    - name: Enable Nginx site configuration
+      file:
+        src: "{{ nginx_conf_path }}/{{ item.name }}"
+        dest: "{{ nginx_conf_link_path }}/{{ item.name }}"
+        state: link
+      loop: "{{ git_repos }}"
+      notify:
+        - reload nginx
+
+    - name: Run installation script in each repo
+      command:
+        cmd: "./install.sh"
+        chdir: "{{ directory }}/{{ item.name }}"
+      loop: "{{ git_repos }}"
+
+    # - name: Run starting script in each repo
+    #   command:
+    #     cmd: "./start.sh"
+    #     chdir: "{{ directory }}/{{ item.name }}"
+    #   loop: "{{ git_repos }}"
+
+  handlers:
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded

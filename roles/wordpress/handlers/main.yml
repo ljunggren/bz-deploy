@@ -1,0 +1,2 @@
+- name: set wp-config
+  command: chown www-data:www-data /var/www/html/wordpress/wp-config.php

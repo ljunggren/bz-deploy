@@ -1,0 +1,32 @@
+- name: Download WordPress
+  get_url:
+    url: https://wordpress.org/latest.zip
+    dest: /tmp/wordpress.zip
+    mode: '0644'
+
+- name: Extract WordPress
+  unarchive:
+    src: /tmp/wordpress.zip
+    dest: /var/www/html/
+    creates: /var/www/html/wordpress
+    remote_src: yes
+
+- name: Check if wp-config.php exists
+  stat:
+    path: /var/www/html/wordpress/wp-config.php
+  register: wp_config_exists
+
+- name: Copy sample WordPress config if wp-config.php doesn't exist
+  ansible.builtin.copy:
+    src: /var/www/html/wordpress/wp-config-sample.php
+    dest: /var/www/html/wordpress/wp-config.php
+    remote_src: yes
+  when: not wp_config_exists.stat.exists
+
+- name: Set ownership and permissions for wp-config.php
+  ansible.builtin.file:
+    path: /var/www/html/wordpress/wp-config.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  when: wp_config_exists.stat.exists and wp_config_exists.stat.isreg

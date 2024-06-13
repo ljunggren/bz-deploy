@@ -1,6 +1,6 @@
 ---
 - name: Deploy Node.js app with Nginx and Let's Encrypt on Ubuntu 22.04
-  hosts: staging-bh
+  hosts: staging-bh:production-bh:production-fr
   become: yes
   roles:
     - setup
@@ -9,3 +9,17 @@
     - nodejs
     - github
     - application
+
+- name: Deploy Wordpress with Nginx and Let's Encrypt on Ubuntu 22.04
+  hosts: management-bh
+  become: yes
+  roles:
+    # - setup
+    # - nginx
+    # - https
+    # - nodejs
+    # - github
+    # - php
+    #- mysql
+    # - wordpress
+    - nginx-wp

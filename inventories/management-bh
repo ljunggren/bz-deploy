@@ -1,0 +1,19 @@
+[management-bh]
+mgmt1bh.boozang.com ansible_ssh_user=ubuntu
+
+[management-bh:vars]
+domain_name=boozang.com
+host_dns_name=boozang.com
+server_name=boozang.com
+
+mysql_root_password="iamgroot"
+mysql_db="wordpress"
+
+mysql_user="wordpress"
+mysql_password="iamgroot"
+server_name="boozang.com"
+nginx_sites_available="/etc/nginx/sites-available"
+nginx_sites_enabled="/etc/nginx/sites-enabled"
+wordpress_root="/var/www/html/wordpress"  # Set the WordPress installation directory
+
+ansible_python_interpreter="/usr/bin/python3" 

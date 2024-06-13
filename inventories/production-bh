@@ -2,5 +2,12 @@
 prd1bh.boozang.com ansible_ssh_user=ubuntu
 
 [production-bh:vars]
-ansible_python_interpreter=/usr/bin/python3
 node_env=production-bh
+
+# domain_name=prd1bh.boozang.com
+# host_dns_name=prd1bh.boozang.com
+# server_name=prd1bh.boozang.com
+
+domain_name=ai.boozang.com
+host_dns_name=ai.boozang.com
+server_name=ai.boozang.com

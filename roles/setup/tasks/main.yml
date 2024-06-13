@@ -56,17 +56,18 @@
     name: unattended-upgrades
     state: present
 
-- name: Configure automatic security updates
-  ansible.builtin.copy:
-    dest: /etc/apt/apt.conf.d/50unattended-upgrades
-    content: |
-      Unattended-Upgrade::Allowed-Origins {
-          "${distro_id}:${distro_codename}";
-          "${distro_id}:${distro_codename}-security";
-          "${distro_id}ESMApps:${distro_codename}-apps-security";
-          "${distro_id}ESM:${distro_codename}-infra-security";
-      };
-      Unattended-Upgrade::Package-Blacklist {
-      };
-      Unattended-Upgrade::Automatic-Reboot "true";
-      Unattended-Upgrade::Automatic-Reboot-Time "02:00";
+# - name: Configure automatic security updates
+#   tags: security
+#   ansible.builtin.copy:
+#     dest: /etc/apt/apt.conf.d/50unattended-upgrades
+#     content: |
+#       Unattended-Upgrade::Allowed-Origins {
+#           "${distro_id}:${distro_codename}";
+#           "${distro_id}:${distro_codename}-security";
+#           "${distro_id}ESMApps:${distro_codename}-apps-security";
+#           "${distro_id}ESM:${distro_codename}-infra-security";
+#       };
+#       Unattended-Upgrade::Package-Blacklist {
+#       };
+#       Unattended-Upgrade::Automatic-Reboot "false";
+#       Unattended-Upgrade::Automatic-Reboot-Time "02:00";

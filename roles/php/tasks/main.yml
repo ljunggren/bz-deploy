@@ -1,0 +1,17 @@
+- name: Install PHP and required extensions
+  apt:
+    name:
+      - php-fpm
+      - php-mysql
+      - php-cli
+      - php-cgi
+      - php-gd
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Ensure PHP-FPM is started and enabled
+  service:
+    name: php8.1-fpm
+    state: started
+    enabled: true

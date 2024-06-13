@@ -1,8 +1,16 @@
+# Python
+ansible_python_interpreter: /usr/bin/python3
+
 # GitHub credentials
 
 github_username: "ljunggren"  # Replace with your GitHub username
 github_repository: "ljunggren/bz-dist"  # Replace with your GitHub username and repository
+git_repo: ssh://git@github.com/ljunggren/bz-dist
 
+# Deployment branch in bz-dist
+
+branch: master
+path_to_app: /var/www/bz-dist
 
 # NodeJS
 
@@ -12,7 +20,7 @@ nodejs_app_port: 3000
 
 # Ports
 
-ssh_port: 21
+ssh_port: 22
 nginx_ssl_port: 443
 
 # SSH Keys
