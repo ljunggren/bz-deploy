@@ -1,0 +1,1 @@
+ansible-playbook -i inventories/staging-bh-next site.yml --tags=deploy
