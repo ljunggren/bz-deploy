@@ -1,0 +1,10 @@
+[staging-bh]
+stg1bh.boozang.com ansible_ssh_user=ubuntu
+
+[staging-bh:vars]
+ansible_python_interpreter=/usr/bin/python3
+node_env=staging-next
+domain_name=staging-bh.boozang.com
+host_dns_name=staging-bh.boozang.com
+server_name=staging-bh.boozang.com
+
