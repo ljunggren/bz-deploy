@@ -1,0 +1,132 @@
+---
+# Node.js Rollback Playbook
+# Rolls back from Node.js 24.x to 20.x if upgrade fails
+#
+# Usage:
+#   ./staging-nodejs-rollback.sh
+#   ./production-fr-nodejs-rollback.sh
+#   ./production-bh-nodejs-rollback.sh
+
+- name: Rollback Node.js to v20.x
+  hosts: staging-bh:production-bh:production-fr:staging-bh-next
+  become: yes
+  vars:
+    path_to_app: /var/www/bz-dist
+
+  tasks:
+    - name: Display rollback warning
+      ansible.builtin.debug:
+        msg: "Rolling back Node.js to v20.x"
+
+    # Stop application
+    - name: Stop PM2 processes
+      ansible.builtin.command: pm2 stop all
+      become_user: ubuntu
+      ignore_errors: yes
+
+    # Remove Node.js 24
+    - name: Remove Node.js packages
+      ansible.builtin.apt:
+        name:
+          - nodejs
+          - npm
+        state: absent
+        purge: yes
+
+    - name: Clean up Node.js files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/lib/node_modules
+        - /usr/bin/node
+        - /usr/bin/npm
+        - /usr/bin/npx
+        - /tmp/setup_nodejs_24.sh
+        - /etc/apt/sources.list.d/nodesource.list
+
+    # Install Node.js 20
+    - name: Download Node.js 20 setup script
+      ansible.builtin.get_url:
+        url: https://deb.nodesource.com/setup_20.x
+        dest: /tmp/setup_nodejs_20.sh
+        mode: '0755'
+
+    - name: Run Node.js 20 setup script
+      ansible.builtin.shell: /tmp/setup_nodejs_20.sh
+
+    - name: Install Node.js 20
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+    # Verify rollback
+    - name: Check Node.js version
+      ansible.builtin.command: node --version
+      register: node_version
+      changed_when: false
+
+    - name: Display Node.js version
+      ansible.builtin.debug:
+        msg: "Rolled back to: {{ node_version.stdout }}"
+
+    # Restore node_modules from backup if available
+    - name: Check for node_modules backup
+      ansible.builtin.stat:
+        path: "/home/ubuntu/node_modules_backup_{{ ansible_date_time.date }}.tar.gz"
+      register: backup_file
+
+    - name: Remove current node_modules
+      ansible.builtin.file:
+        path: "{{ path_to_app }}/node_modules"
+        state: absent
+
+    - name: Restore node_modules from backup
+      ansible.builtin.unarchive:
+        src: "/home/ubuntu/node_modules_backup_{{ ansible_date_time.date }}.tar.gz"
+        dest: "{{ path_to_app }}"
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+      when: backup_file.stat.exists
+      become_user: ubuntu
+
+    - name: Install npm dependencies (if no backup)
+      ansible.builtin.command: npm install --production
+      args:
+        chdir: "{{ path_to_app }}"
+      become_user: ubuntu
+      when: not backup_file.stat.exists
+
+    # Reinstall PM2
+    - name: Install PM2 globally
+      ansible.builtin.command: npm install pm2 -g
+
+    # Restart application
+    - name: Start Node.js app with PM2
+      ansible.builtin.command: pm2 start server.js
+      args:
+        chdir: "{{ path_to_app }}"
+      environment:
+        NODE_ENV: "{{ node_env }}"
+      become_user: ubuntu
+
+    # Verify
+    - name: Wait for app to start
+      ansible.builtin.pause:
+        seconds: 5
+
+    - name: Check PM2 status
+      ansible.builtin.command: pm2 list
+      become_user: ubuntu
+      register: pm2_status
+      changed_when: false
+
+    - name: Display PM2 status
+      ansible.builtin.debug:
+        msg: "{{ pm2_status.stdout_lines }}"
+
+    - name: Rollback complete
+      ansible.builtin.debug:
+        msg: "Rollback to Node.js {{ node_version.stdout }} complete"

@@ -1,0 +1,186 @@
+---
+# Node.js Upgrade Playbook
+# Upgrades Node.js from 20.x to 24.x on traffic servers
+#
+# Usage:
+#   ./staging-nodejs-upgrade.sh        # Staging first
+#   ./production-fr-nodejs-upgrade.sh  # EU server
+#   ./production-bh-nodejs-upgrade.sh  # AI server (last)
+
+- name: Upgrade Node.js to v24.x
+  hosts: staging-bh:production-bh:production-fr:staging-bh-next
+  become: yes
+  vars:
+    path_to_app: /var/www/bz-dist
+
+  tasks:
+    # Pre-flight checks
+    - name: Check current Node.js version
+      ansible.builtin.command: node --version
+      register: node_version_before
+      changed_when: false
+
+    - name: Display current Node.js version
+      ansible.builtin.debug:
+        msg: "Current Node.js version: {{ node_version_before.stdout }}"
+
+    - name: Check disk space
+      ansible.builtin.command: df -h /
+      register: disk_space
+      changed_when: false
+
+    - name: Display disk space
+      ansible.builtin.debug:
+        msg: "{{ disk_space.stdout_lines }}"
+
+    # Backup
+    - name: Backup package-lock.json
+      ansible.builtin.copy:
+        src: "{{ path_to_app }}/package-lock.json"
+        dest: "/home/ubuntu/package-lock_backup_{{ ansible_date_time.date }}.json"
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+      become_user: ubuntu
+      ignore_errors: yes
+
+    # Stop application
+    - name: Stop PM2 processes
+      ansible.builtin.command: pm2 stop all
+      become_user: ubuntu
+      ignore_errors: yes
+
+    - name: Save PM2 process list
+      ansible.builtin.command: pm2 save
+      become_user: ubuntu
+      ignore_errors: yes
+
+    # Remove old Node.js
+    - name: Remove existing Node.js packages
+      ansible.builtin.apt:
+        name:
+          - nodejs
+          - npm
+        state: absent
+        purge: yes
+
+    - name: Autoremove unused packages
+      ansible.builtin.apt:
+        autoremove: yes
+
+    - name: Clean up old Node.js files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/lib/node_modules
+        - /usr/bin/node
+        - /usr/bin/npm
+        - /usr/bin/npx
+        - /tmp/setup_nodejs_20.sh
+        - /tmp/setup_nodejs_24.sh
+
+    # Install new Node.js
+    - name: Download Node.js 24 setup script
+      ansible.builtin.get_url:
+        url: https://deb.nodesource.com/setup_24.x
+        dest: /tmp/setup_nodejs_24.sh
+        mode: '0755'
+
+    - name: Run Node.js 24 setup script
+      ansible.builtin.shell: /tmp/setup_nodejs_24.sh
+
+    - name: Install Node.js 24
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+    - name: Install build tools
+      ansible.builtin.apt:
+        name:
+          - build-essential
+          - python3
+        state: present
+
+    # Verify installation
+    - name: Check new Node.js version
+      ansible.builtin.command: node --version
+      register: node_version_after
+      changed_when: false
+
+    - name: Check npm version
+      ansible.builtin.command: npm --version
+      register: npm_version
+      changed_when: false
+
+    - name: Display new versions
+      ansible.builtin.debug:
+        msg: "Node.js: {{ node_version_after.stdout }}, npm: {{ npm_version.stdout }}"
+
+    # Reinstall dependencies
+    - name: Remove old node_modules
+      ansible.builtin.file:
+        path: "{{ path_to_app }}/node_modules"
+        state: absent
+
+    - name: Install npm dependencies
+      ansible.builtin.command: npm install --production
+      args:
+        chdir: "{{ path_to_app }}"
+      become_user: ubuntu
+
+    # Reinstall PM2 globally
+    - name: Install PM2 globally
+      ansible.builtin.command: npm install pm2 -g
+
+    - name: Update PM2 daemon
+      ansible.builtin.command: pm2 update
+      become_user: ubuntu
+      ignore_errors: yes
+
+    # Restart application
+    - name: Start Node.js app with PM2
+      ansible.builtin.command: pm2 start server.js
+      args:
+        chdir: "{{ path_to_app }}"
+      environment:
+        NODE_ENV: "{{ node_env }}"
+      become_user: ubuntu
+
+    # Verify application
+    - name: Wait for app to start
+      ansible.builtin.pause:
+        seconds: 5
+
+    - name: Check PM2 status
+      ansible.builtin.command: pm2 list
+      become_user: ubuntu
+      register: pm2_status
+      changed_when: false
+
+    - name: Display PM2 status
+      ansible.builtin.debug:
+        msg: "{{ pm2_status.stdout_lines }}"
+
+    - name: Test application response
+      ansible.builtin.uri:
+        url: http://localhost:3000
+        method: GET
+        status_code: [200, 301, 302]
+      register: app_response
+      ignore_errors: yes
+
+    - name: Display test result
+      ansible.builtin.debug:
+        msg: "Application response: {{ app_response.status | default('FAILED') }}"
+
+    # Summary
+    - name: Upgrade summary
+      ansible.builtin.debug:
+        msg: |
+          === Node.js Upgrade Complete ===
+          Before: {{ node_version_before.stdout }}
+          After:  {{ node_version_after.stdout }}
+          npm:    {{ npm_version.stdout }}
+          App:    {{ 'Running' if app_response.status is defined else 'Check manually' }}
