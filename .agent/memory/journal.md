@@ -1,5 +1,58 @@
 # Project Journal
 
+## 2026-01-26
+
+### Session: MongoDB 8.0 Infrastructure Setup
+
+**Work Completed:**
+- Installed MongoDB 8.0.17 on new database servers:
+  - `db1bh.boozang.com` (Bahrain/AI region)
+  - `db1fr.boozang.com` (Frankfurt/EU region)
+- Configured MongoDB with authentication enabled
+- Set up 100GB backup disks on both servers (`/dev/sdb` → `/mnt/disk`)
+- Created automated backup system:
+  - Hourly backups (2 day retention)
+  - Daily backups at 2am (30 day retention)
+  - Backup location: `/mnt/disk/mongodb-backups/`
+
+**Database Migration:**
+- Created `mongodb-restore-bh.sh` and `mongodb-restore-fr.sh` scripts
+- Restored databases from old CentOS servers:
+  - `db1de.boozang.com` → `db1fr.boozang.com` (boozang-production: 1.68M docs)
+  - `db1be2.boozang.com` → `db1bh.boozang.com` (boozang-production: 677K docs)
+  - `db1be2.boozang.com` → `db1bh.boozang.com` (boozang-next: staging)
+
+**Backup Fetch Scripts:**
+- Created rsync-based scripts for fetching backups from old servers:
+  - `backup-fetch-eu-prod.sh` (db1de → local)
+  - `backup-fetch-ai-prod.sh` (db1be2 → local)
+  - `backup-fetch-staging.sh` (db1be2 → local)
+
+**MongoDB Role Updates:**
+- Made backup tasks conditional (`mongodb_backup_enabled`)
+- Made role idempotent for re-runs
+- Added dynamic Ubuntu version detection for repo URL
+
+**Files Created:**
+- `database.yml` - MongoDB deployment playbook
+- `roles/mongodb/` - MongoDB installation role
+- `inventories/db-bh`, `inventories/db-fr` - New DB server inventories
+- `inventories/db-old-bh`, `inventories/db-old-de` - Old server inventories
+- `backup-fetch-*.sh` - Backup retrieval scripts
+- `mongodb-restore-*.sh` - Database restore scripts
+
+**Current State:**
+| Server | MongoDB | Databases |
+|--------|---------|-----------|
+| db1bh.boozang.com | 8.0.17 | boozang-production, boozang-next |
+| db1fr.boozang.com | 8.0.17 | boozang-production |
+
+**Credentials:**
+- Admin user: `admin`
+- Password: `DevoIsAMongoDatabase`
+
+---
+
 ## 2026-01-25
 
 ### Session: Node.js Upgrade Plan Migration

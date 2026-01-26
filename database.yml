@@ -1,0 +1,7 @@
+---
+- name: Deploy MongoDB database servers
+  hosts: db-bh:db-fr
+  become: yes
+  roles:
+    - setup
+    - mongodb

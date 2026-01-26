@@ -1,0 +1,33 @@
+---
+# MongoDB defaults
+mongodb_version: "8.0"
+mongodb_backup_enabled: true
+mongodb_port: 27017
+mongodb_bind_ip: "0.0.0.0"
+mongodb_data_dir: /var/lib/mongodb
+mongodb_log_dir: /var/log/mongodb
+
+# Admin credentials (override these in inventory or vault)
+mongodb_admin_user: admin
+mongodb_admin_password: "{{ lookup('env', 'MONGODB_ADMIN_PASSWORD') | default('changeme', true) }}"
+
+# App server IPs allowed to connect (override in inventory)
+mongodb_allowed_ips:
+  - "10.0.0.0/8"
+  - "54.37.78.127"
+  - "54.39.176.59"
+  - "54.39.182.226"
+  - "74.59.26.5"
+
+# Backup disk configuration
+mongodb_backup_disk: /dev/sdb
+mongodb_backup_mount: /mnt/disk
+mongodb_backup_dir: /mnt/disk/mongodb-backups
+
+# Backup schedule
+mongodb_daily_backup_hour: "2"
+mongodb_daily_backup_minute: "0"
+mongodb_daily_backup_retention_days: 30
+
+mongodb_hourly_backup_minute: "0"
+mongodb_hourly_backup_retention_days: 2

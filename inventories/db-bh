@@ -1,0 +1,8 @@
+[db-bh]
+db1bh.boozang.com ansible_ssh_user=ubuntu
+
+[db-bh:vars]
+ansible_python_interpreter=/usr/bin/python3
+server_name=db1bh.boozang.com
+mongodb_version=8.0
+mongodb_port=27017

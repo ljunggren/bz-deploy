@@ -1,0 +1,24 @@
+---
+# Fetch MongoDB backups from remote servers
+#
+# Usage:
+#   # Fetch production backup from EU server
+#   ansible-playbook backup-fetch.yml -i inventories/production-fr -e backup_type=production
+#
+#   # Fetch production backup from AI server
+#   ansible-playbook backup-fetch.yml -i inventories/production-bh -e backup_type=production
+#
+#   # Fetch staging backup from staging server
+#   ansible-playbook backup-fetch.yml -i inventories/staging-bh -e backup_type=staging
+#
+#   # Fetch from specific date
+#   ansible-playbook backup-fetch.yml -i inventories/production-fr -e backup_type=production -e backup_date=2026-01-25
+#
+#   # Fetch to custom local directory
+#   ansible-playbook backup-fetch.yml -i inventories/production-fr -e backup_local_dir=/path/to/backups
+
+- name: Fetch MongoDB backups
+  hosts: all
+  become: yes
+  roles:
+    - mongodb-backup-fetch

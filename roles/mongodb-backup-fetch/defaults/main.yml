@@ -1,0 +1,21 @@
+---
+# MongoDB backup fetch defaults
+
+# Local directory to store fetched backups
+backup_local_dir: "./backups"
+
+# Remote backup base path
+backup_remote_base: "/mnt/disk/backup/mongo"
+
+# Date format: MMDDYY (e.g., 012626 for Jan 26, 2026)
+backup_date: "{{ '%m%d%y' | strftime }}"
+
+# Backup sources by environment
+backup_sources:
+  production:
+    path: "{{ backup_remote_base }}/{{ backup_date }}/boozang-production"
+  next:
+    path: "{{ backup_remote_base }}/{{ backup_date }}/boozang-next"
+
+# Which backup to fetch (production or next)
+backup_type: production

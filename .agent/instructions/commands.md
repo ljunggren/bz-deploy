@@ -14,13 +14,26 @@ Reserved commands for managing AI agent sessions.
 ## Start Session Behavior
 
 When `start session` is invoked:
-1. Read `.agent/instructions.md` and key instruction files
-2. Check latest entry in `.agent/memory/journal.md`
-3. Check git status for any uncommitted work
-4. Provide brief reminder to user:
+
+1. **Read ALL files in `.agent/` directory**:
+   - `.agent/instructions.md`
+   - `.agent/context/project-context.md`
+   - `.agent/context/infrastructure.md`
+   - `.agent/instructions/general.md`
+   - `.agent/instructions/ansible.md`
+   - `.agent/instructions/deployment.md`
+   - `.agent/instructions/documentation.md`
+   - `.agent/instructions/commands.md`
+   - `.agent/memory/journal.md`
+   - `.agent/memory/deployment-log.md`
+   - `.agent/memory/maintenance-log.md`
+
+2. **Check git status** for uncommitted work
+
+3. **Provide brief summary to user**:
    - Last session date and summary
    - Any pending work or open items
-   - Current branch status
+   - Current branch and uncommitted files
 
 ## End Session Behavior
 

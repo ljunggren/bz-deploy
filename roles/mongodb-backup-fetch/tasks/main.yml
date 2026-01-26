@@ -1,0 +1,47 @@
+---
+# Fetch MongoDB backups from remote servers
+
+- name: Set backup source path
+  ansible.builtin.set_fact:
+    backup_source_path: "{{ backup_sources[backup_type].path }}"
+
+- name: Check if remote backup exists
+  ansible.builtin.stat:
+    path: "{{ backup_source_path }}"
+  register: backup_stat
+
+- name: Fail if backup directory not found
+  ansible.builtin.fail:
+    msg: "Backup not found at {{ backup_source_path }}"
+  when: not backup_stat.stat.exists
+
+- name: Get list of backup files
+  ansible.builtin.find:
+    paths: "{{ backup_source_path }}"
+    patterns: "*"
+  register: backup_files
+
+- name: Display backup files found
+  ansible.builtin.debug:
+    msg: "Found {{ backup_files.files | length }} files in {{ backup_source_path }}"
+
+- name: Create local backup directory
+  ansible.builtin.file:
+    path: "{{ backup_local_dir }}/{{ inventory_hostname }}/{{ backup_type }}/{{ backup_date }}"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  become: no
+
+- name: Fetch backup files
+  ansible.builtin.fetch:
+    src: "{{ item.path }}"
+    dest: "{{ backup_local_dir }}/{{ inventory_hostname }}/{{ backup_type }}/{{ backup_date }}/"
+    flat: yes
+  loop: "{{ backup_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Display fetch complete message
+  ansible.builtin.debug:
+    msg: "Backup fetched to {{ backup_local_dir }}/{{ inventory_hostname }}/{{ backup_type }}/{{ backup_date }}/"

@@ -1,0 +1,190 @@
+---
+# MongoDB 8.0 installation for Ubuntu (22.04 Jammy / 24.04 Noble)
+
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - curl
+    state: present
+    update_cache: yes
+
+- name: Add MongoDB GPG key
+  ansible.builtin.apt_key:
+    url: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+    state: present
+
+- name: Add MongoDB repository
+  ansible.builtin.apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu {{ ansible_distribution_release }}/mongodb-org/{{ mongodb_version }} multiverse"
+    state: present
+    filename: mongodb-org-{{ mongodb_version }}
+
+- name: Install MongoDB packages
+  ansible.builtin.apt:
+    name: mongodb-org
+    state: present
+    update_cache: yes
+
+- name: Start and enable mongod service
+  ansible.builtin.service:
+    name: mongod
+    state: started
+    enabled: yes
+
+- name: Wait for MongoDB to be ready
+  ansible.builtin.wait_for:
+    port: "{{ mongodb_port }}"
+    delay: 5
+    timeout: 60
+
+- name: Allow MongoDB port from app servers
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ mongodb_port }}"
+    proto: tcp
+    from_ip: "{{ item }}"
+  loop: "{{ mongodb_allowed_ips }}"
+
+- name: Check if admin user exists (with auth)
+  ansible.builtin.command:
+    cmd: >
+      mongosh --quiet
+      -u "{{ mongodb_admin_user }}"
+      -p "{{ mongodb_admin_password }}"
+      --authenticationDatabase admin
+      --eval "db.getSiblingDB('admin').getUser('{{ mongodb_admin_user }}')"
+  register: admin_user_auth_check
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Check if admin user exists (without auth - fresh install)
+  ansible.builtin.command:
+    cmd: >
+      mongosh --quiet --eval
+      "db.getSiblingDB('admin').getUser('{{ mongodb_admin_user }}')"
+  register: admin_user_noauth_check
+  changed_when: false
+  failed_when: false
+  when: admin_user_auth_check.rc != 0
+
+- name: Create admin user (fresh install only)
+  ansible.builtin.command:
+    cmd: >
+      mongosh --quiet --eval
+      "db.getSiblingDB('admin').createUser({
+        user: '{{ mongodb_admin_user }}',
+        pwd: '{{ mongodb_admin_password }}',
+        roles: [
+          { role: 'userAdminAnyDatabase', db: 'admin' },
+          { role: 'readWriteAnyDatabase', db: 'admin' },
+          { role: 'dbAdminAnyDatabase', db: 'admin' },
+          { role: 'clusterAdmin', db: 'admin' }
+        ]
+      })"
+  when: admin_user_auth_check.rc != 0 and (admin_user_noauth_check.stdout == "null" or admin_user_noauth_check.rc != 0)
+  no_log: true
+
+- name: Deploy MongoDB configuration (with auth enabled)
+  ansible.builtin.template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    mongodb_auth_enabled: true
+  notify: restart mongod
+
+- name: Flush handlers to restart MongoDB with auth
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for MongoDB to be ready after config change
+  ansible.builtin.wait_for:
+    port: "{{ mongodb_port }}"
+    delay: 5
+    timeout: 60
+
+- name: Verify MongoDB is running with authentication
+  ansible.builtin.command:
+    cmd: >
+      mongosh --quiet
+      -u "{{ mongodb_admin_user }}"
+      -p "{{ mongodb_admin_password }}"
+      --authenticationDatabase admin
+      --eval "db.version()"
+  register: mongodb_version_check
+  changed_when: false
+  no_log: true
+
+- name: Display MongoDB version
+  ansible.builtin.debug:
+    msg: "MongoDB version: {{ mongodb_version_check.stdout }}"
+
+# Backup disk mounting and backup setup (optional)
+
+- name: Create mount point for backup disk
+  ansible.builtin.file:
+    path: "{{ mongodb_backup_mount }}"
+    state: directory
+    mode: '0755'
+  when: mongodb_backup_enabled
+
+- name: Check if backup disk is already formatted
+  ansible.builtin.command:
+    cmd: blkid {{ mongodb_backup_disk }}
+  register: disk_format_check
+  changed_when: false
+  failed_when: false
+  when: mongodb_backup_enabled
+
+- name: Format backup disk if not formatted
+  ansible.builtin.filesystem:
+    fstype: ext4
+    dev: "{{ mongodb_backup_disk }}"
+  when: mongodb_backup_enabled and disk_format_check.rc != 0
+
+- name: Mount backup disk
+  ansible.builtin.mount:
+    path: "{{ mongodb_backup_mount }}"
+    src: "{{ mongodb_backup_disk }}"
+    fstype: ext4
+    opts: defaults
+    state: mounted
+  when: mongodb_backup_enabled
+
+- name: Create MongoDB backup directory
+  ansible.builtin.file:
+    path: "{{ mongodb_backup_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: mongodb_backup_enabled
+
+- name: Deploy MongoDB backup script
+  ansible.builtin.template:
+    src: mongodb-backup.sh.j2
+    dest: /usr/local/bin/mongodb-backup.sh
+    owner: root
+    group: root
+    mode: '0755'
+  when: mongodb_backup_enabled
+
+- name: Set up MongoDB daily backup cron job
+  ansible.builtin.cron:
+    name: "MongoDB daily backup"
+    minute: "{{ mongodb_daily_backup_minute }}"
+    hour: "{{ mongodb_daily_backup_hour }}"
+    job: "/usr/local/bin/mongodb-backup.sh daily >> /var/log/mongodb-backup.log 2>&1"
+    user: root
+  when: mongodb_backup_enabled
+
+- name: Set up MongoDB hourly backup cron job
+  ansible.builtin.cron:
+    name: "MongoDB hourly backup"
+    minute: "{{ mongodb_hourly_backup_minute }}"
+    job: "/usr/local/bin/mongodb-backup.sh hourly >> /var/log/mongodb-backup.log 2>&1"
+    user: root
+  when: mongodb_backup_enabled

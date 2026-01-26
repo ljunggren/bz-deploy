@@ -1,0 +1,5 @@
+[db-old-de]
+db1de.boozang.com ansible_ssh_user=centos
+
+[db-old-de:vars]
+ansible_python_interpreter=/usr/bin/python2

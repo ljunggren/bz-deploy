@@ -1,0 +1,43 @@
+#!/bin/bash
+# MongoDB backup script - managed by Ansible
+
+BACKUP_TYPE="${1:-daily}"
+BACKUP_DIR="{{ mongodb_backup_dir }}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_NAME="mongodb_${BACKUP_TYPE}_${TIMESTAMP}"
+
+# Set retention based on backup type
+if [ "$BACKUP_TYPE" = "hourly" ]; then
+    RETENTION_DAYS="{{ mongodb_hourly_backup_retention_days }}"
+elif [ "$BACKUP_TYPE" = "daily" ]; then
+    RETENTION_DAYS="{{ mongodb_daily_backup_retention_days }}"
+else
+    echo "[$(date)] ERROR: Unknown backup type: ${BACKUP_TYPE}"
+    exit 1
+fi
+
+# Ensure backup directory exists
+mkdir -p "${BACKUP_DIR}"
+
+# Run mongodump
+mongodump \
+  --uri="mongodb://{{ mongodb_admin_user }}:{{ mongodb_admin_password }}@localhost:{{ mongodb_port }}/?authSource=admin" \
+  --out="${BACKUP_DIR}/${BACKUP_NAME}"
+
+# Check if backup succeeded
+if [ $? -eq 0 ]; then
+    echo "[$(date)] Backup completed: ${BACKUP_NAME}"
+
+    # Compress the backup
+    tar -czf "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" -C "${BACKUP_DIR}" "${BACKUP_NAME}"
+    rm -rf "${BACKUP_DIR}/${BACKUP_NAME}"
+
+    echo "[$(date)] Compressed: ${BACKUP_NAME}.tar.gz"
+else
+    echo "[$(date)] ERROR: Backup failed!"
+    exit 1
+fi
+
+# Remove backups older than retention period (only for this backup type)
+find "${BACKUP_DIR}" -name "mongodb_${BACKUP_TYPE}_*.tar.gz" -mtime +${RETENTION_DAYS} -delete
+echo "[$(date)] Cleaned up ${BACKUP_TYPE} backups older than ${RETENTION_DAYS} days"

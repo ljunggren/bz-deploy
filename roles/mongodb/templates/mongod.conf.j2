@@ -1,0 +1,25 @@
+# mongod.conf - MongoDB 8.0 configuration
+# Managed by Ansible - do not edit manually
+
+# Where and how to store data
+storage:
+  dbPath: {{ mongodb_data_dir }}
+
+# Where to write logging data
+systemLog:
+  destination: file
+  logAppend: true
+  path: {{ mongodb_log_dir }}/mongod.log
+
+# Network interfaces
+net:
+  port: {{ mongodb_port }}
+  bindIp: {{ mongodb_bind_ip }}
+
+# Process management
+processManagement:
+  timeZoneInfo: /usr/share/zoneinfo
+
+# Security
+security:
+  authorization: {{ 'enabled' if mongodb_auth_enabled | default(false) else 'disabled' }}
