@@ -136,13 +136,15 @@ See `.agent/memory/maintenance-log.md` for active upgrade plans:
 
 ## External Dependencies
 
-### MongoDB (Separate from this repo)
+### MongoDB
 
-Database servers are managed separately (not by bz-deploy):
-- **db-bh** - MongoDB 5.0.4 on CentOS 7 (serves ai server)
-- **db-fr** - MongoDB 5.0.4 on CentOS 7 (serves eu server)
+Database servers managed by `database.yml` playbook:
+- **db1bh.boozang.com** - MongoDB 8.0.17 on Ubuntu 22.04 (serves ai server + staging)
+- **db1fr.boozang.com** - MongoDB 8.0.17 on Ubuntu 22.04 (serves eu server)
 
-**Planned:** Migration to MongoDB 8.0 on Ubuntu 22.04 (see bz project)
+Old servers (CentOS 7, MongoDB 5.0.4) still running but no longer used by app:
+- `db1be2.boozang.com` (old BH)
+- `db1de.boozang.com` (old EU)
 
 ### DNS
 

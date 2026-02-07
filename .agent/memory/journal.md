@@ -1,5 +1,42 @@
 # Project Journal
 
+## 2026-02-06
+
+### Session: MongoDB 8.0 Cutover Preparation
+
+**Work Completed:**
+- Fetched fresh production backups from old CentOS servers:
+  - `db1be2.boozang.com` → `./backups/db1be2.boozang.com/production/fresh_020626/` (677K docs, ~483 MB)
+  - `db1de.boozang.com` → `./backups/db1de.boozang.com/production/fresh_020626/` (1.68M docs, ~750 MB)
+- Restored fresh backups to new MongoDB 8.0 servers:
+  - `db1bh.boozang.com` — 675,697 documents, 0 failures
+  - `db1fr.boozang.com` — 1,685,794 documents, 0 failures
+- Updated MongoDB connection strings in `bz` app codebase (7 files):
+  - `db-be.boozang.com` → `db1bh.boozang.com` (production-bh, production-be, staging-be, staging-next, build-be)
+  - `db-de.boozang.com` → `db1fr.boozang.com` (production-fr, production-de)
+- Committed and pushed to `bz` repo: `cfa4111e9`
+- Deployed to staging-bh: v11.0.15, healthy, HTTP 200
+
+**Key Findings:**
+- Mongoose 5→8 migration is complete in `bz` repo (merged Feb 4, Mongoose 8.22.1)
+- Node.js 24 upgrade blocker is resolved — ready to attempt after DB cutover
+- Staging-bh already pointed to db1bh.boozang.com (since Jan 26) and works fine without auth credentials
+
+**Current State:**
+| Server | Status | DB Connection |
+| :--- | :--- | :--- |
+| staging-bh | Deployed, testing | db1bh.boozang.com (new) |
+| production-bh | Pending deploy | Code updated, not yet deployed |
+| production-fr | Pending deploy | Code updated, not yet deployed |
+
+**Next Steps:**
+- Manual testing baseline on staging (in progress)
+- Deploy to production-fr (EU) after staging verified
+- Deploy to production-bh (AI) after EU verified
+- Then attempt Node.js 24 upgrade (staging → EU → AI)
+
+---
+
 ## 2026-01-26
 
 ### Session: MongoDB 8.0 Infrastructure Setup
