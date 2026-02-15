@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Upgrade Node.js on ai server (production-bh)
 # Run LAST after staging and eu are verified
 

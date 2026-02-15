@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Fetch production backup from old EU database server (db1de.boozang.com)
 set -e
 

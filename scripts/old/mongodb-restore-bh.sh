@@ -1,16 +1,17 @@
 #!/bin/bash
-# Restore MongoDB from db1de.boozang.com (old EU) to db1fr.boozang.com (new EU)
+cd "$(dirname "$0")/.."
+# Restore MongoDB from db1be2.boozang.com (old BH) to db1bh.boozang.com (new BH)
 set -e
 
 DATE=${1:-$(date +%m%d%y)}
-DB_NAME="boozang-production"
-OLD_SERVER="centos@db1de.boozang.com"
-NEW_SERVER="ubuntu@db1fr.boozang.com"
+DB_NAME="${2:-boozang-production}"  # Can also be "boozang-next" for staging
+OLD_SERVER="centos@db1be2.boozang.com"
+NEW_SERVER="ubuntu@db1bh.boozang.com"
 REMOTE_BACKUP_PATH="/mnt/disk/backup/mongo/${DATE}/${DB_NAME}"
-LOCAL_BACKUP_DIR="./backups/restore-fr/${DATE}"
+LOCAL_BACKUP_DIR="./backups/restore-bh/${DATE}"
 MONGO_URI="mongodb://admin:DevoIsAMongoDatabase@localhost:27017/?authSource=admin"
 
-echo "=== MongoDB Restore: db1de -> db1fr ==="
+echo "=== MongoDB Restore: db1be2 -> db1bh ==="
 echo "Date: ${DATE}"
 echo "Database: ${DB_NAME}"
 echo ""
@@ -38,4 +39,4 @@ ssh ${NEW_SERVER} "rm -rf /tmp/mongodb-restore"
 
 echo ""
 echo "=== Restore complete! ==="
-echo "Restored ${DB_NAME} from db1de.boozang.com to db1fr.boozang.com"
+echo "Restored ${DB_NAME} from db1be2.boozang.com to db1bh.boozang.com"

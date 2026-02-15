@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Upgrade Node.js on eu server (production-fr)
 # Run AFTER staging is verified
 

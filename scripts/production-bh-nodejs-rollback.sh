@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Rollback Node.js on ai server (production-bh)
 
 echo "=== Node.js Rollback: production-bh (ai server) ==="

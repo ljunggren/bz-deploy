@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Fetch next/staging backup from old AI database server (db1be2.boozang.com)
 set -e
 

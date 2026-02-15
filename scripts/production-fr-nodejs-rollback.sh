@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Rollback Node.js on eu server (production-fr)
 
 echo "=== Node.js Rollback: production-fr (eu server) ==="

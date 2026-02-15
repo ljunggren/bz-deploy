@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")/.."
 # Upgrade Node.js on staging server
 # Run this FIRST before production servers
 
