@@ -47,13 +47,13 @@ Modular Ansible roles for different components:
 
 ## Deployment Scripts
 
-Deployment scripts follow a naming pattern: `{environment}-{action}.sh`
+All scripts are in the `scripts/` directory and follow a naming pattern: `{environment}-{action}.sh`
 
 Examples:
-- `staging-setup.sh` - Initial staging environment setup
-- `staging-deploy.sh` - Deploy to staging
-- `production-bh-setup.sh` - Setup Bahrain production
-- `production-bh-deploy.sh` - Deploy to Bahrain production
+- `scripts/staging-setup.sh` - Initial staging environment setup
+- `scripts/staging-deploy.sh` - Deploy to staging
+- `scripts/production-bh-setup.sh` - Setup Bahrain production
+- `scripts/production-bh-deploy.sh` - Deploy to Bahrain production
 
 ## Key Patterns
 

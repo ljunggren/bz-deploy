@@ -12,7 +12,7 @@
 
 - **Deployment**: Always test in staging before production
 - **Ansible**: Follow idempotent patterns, use roles for modularity
-- **Scripts**: Use deployment scripts (`staging-deploy.sh`, `production-bh-deploy.sh`, etc.)
+- **Scripts**: Use deployment scripts in `scripts/` (`scripts/staging-deploy.sh`, `scripts/production-bh-deploy.sh`, etc.)
 - **Verification**: Check service status and logs after deployments
 - **Security**: Never commit credentials or private keys
 
@@ -20,16 +20,16 @@
 
 ### Deploy to Staging
 ```bash
-./staging-deploy.sh
+scripts/staging-deploy.sh
 ```
 
 ### Deploy to Production
 ```bash
 # Bahrain
-./production-bh-deploy.sh
+scripts/production-bh-deploy.sh
 
 # France
-./production-fr-deploy.sh
+scripts/production-fr-deploy.sh
 ```
 
 ### Syntax Check

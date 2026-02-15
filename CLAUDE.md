@@ -27,16 +27,16 @@ bz-deploy manages infrastructure as code for:
 
 ### Deploy to Staging
 ```bash
-./staging-deploy.sh
+scripts/staging-deploy.sh
 ```
 
 ### Deploy to Production
 ```bash
 # Bahrain
-./production-bh-deploy.sh
+scripts/production-bh-deploy.sh
 
-# France  
-./production-fr-deploy.sh
+# France
+scripts/production-fr-deploy.sh
 ```
 
 ## Project Structure
@@ -53,9 +53,9 @@ bz-deploy/
 │   ├── nodejs/         # Node.js runtime
 │   ├── github/         # GitHub integration
 │   └── application/    # App deployment
+├── scripts/             # All deployment and ops scripts
 ├── site.yml            # Main deployment playbook
-├── apps.yml            # Application-specific setup
-└── *.sh                # Deployment scripts
+└── apps.yml            # Application-specific setup
 ```
 
 ## Environments
@@ -75,7 +75,7 @@ bz-deploy/
 
 1. **Test in Staging**
    ```bash
-   ./staging-deploy.sh
+   scripts/staging-deploy.sh
    ```
 
 2. **Verify Changes**
@@ -85,7 +85,7 @@ bz-deploy/
 
 3. **Deploy to Production**
    ```bash
-   ./production-bh-deploy.sh
+   scripts/production-bh-deploy.sh
    ```
 
 ## Manual Ansible Commands
@@ -124,6 +124,8 @@ For deployment issues or questions, refer to:
 - `.agent/memory/deployment-log.md` - Deployment history
 - `.agent/memory/journal.md` - Recent work and decisions
 
-## License
+## GitHub
 
-[Add license information]
+- **Required gh user:** `ljunggren`
+- Before any `git push`, verify the active gh account: `gh auth status 2>&1 | grep 'Active account: true' -B3 | head -1`
+- If the active account is not `ljunggren`, run `gh auth switch --user ljunggren` before pushing.

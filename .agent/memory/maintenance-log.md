@@ -54,17 +54,17 @@ url: https://deb.nodesource.com/setup_24.x
 
 | Script | Server | Purpose |
 | :--- | :--- | :--- |
-| `staging-nodejs-upgrade.sh` | staging-bh | Run first |
-| `production-fr-nodejs-upgrade.sh` | eu server | Run second |
-| `production-bh-nodejs-upgrade.sh` | ai server | Run last |
+| `scripts/staging-nodejs-upgrade.sh` | staging-bh | Run first |
+| `scripts/production-fr-nodejs-upgrade.sh` | eu server | Run second |
+| `scripts/production-bh-nodejs-upgrade.sh` | ai server | Run last |
 
 ### Rollback Scripts
 
 | Script | Server |
 | :--- | :--- |
-| `staging-nodejs-rollback.sh` | staging-bh |
-| `production-fr-nodejs-rollback.sh` | eu server |
-| `production-bh-nodejs-rollback.sh` | ai server |
+| `scripts/staging-nodejs-rollback.sh` | staging-bh |
+| `scripts/production-fr-nodejs-rollback.sh` | eu server |
+| `scripts/production-bh-nodejs-rollback.sh` | ai server |
 
 ### Playbooks
 
@@ -241,13 +241,13 @@ Once manual upgrade is validated on staging:
 
 2. Run staging deployment:
    ```bash
-   ./staging-deploy.sh
+   scripts/staging-deploy.sh
    ```
 
 3. Verify staging works, then deploy to production:
    ```bash
-   ./production-fr-deploy.sh  # eu server first
-   ./production-bh-deploy.sh  # ai server after eu verified
+   scripts/production-fr-deploy.sh  # eu server first
+   scripts/production-bh-deploy.sh  # ai server after eu verified
    ```
 
 ---

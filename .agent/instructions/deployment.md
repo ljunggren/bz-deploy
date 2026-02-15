@@ -2,31 +2,32 @@
 
 ## Deployment Scripts
 
-All deployment scripts are located in the project root and follow the naming pattern: `{environment}-{action}.sh`
+All deployment scripts are in the `scripts/` directory and follow the naming pattern: `{environment}-{action}.sh`
 
 ### Available Scripts
 
 | Script | Purpose | Environment |
 |--------|---------|-------------|
-| `staging-setup.sh` | Initial staging setup | Staging (Bahrain) |
-| `staging-deploy.sh` | Deploy to staging | Staging (Bahrain) |
-| `staging-deploy-next.sh` | Deploy to next-gen staging | Staging (Next) |
-| `staging-deploy-lws.sh` | Deploy to LWS staging | Staging (LWS) |
-| `production-bh-setup.sh` | Initial production setup | Production (Bahrain) |
-| `production-bh-deploy.sh` | Deploy to production | Production (Bahrain) |
-| `production-fr-setup.sh` | Initial production setup | Production (France) |
-| `production-fr-deploy.sh` | Deploy to production | Production (France) |
-| `management-setup.sh` | Setup management server | Management |
-| `app-setup.sh` | Setup applications | Management |
+| `scripts/staging-setup.sh` | Initial staging setup | Staging (Bahrain) |
+| `scripts/staging-deploy.sh` | Deploy to staging | Staging (Bahrain) |
+| `scripts/staging-deploy-next.sh` | Deploy to next-gen staging | Staging (Next) |
+| `scripts/staging-deploy-lws.sh` | Deploy to LWS staging | Staging (LWS) |
+| `scripts/production-bh-setup.sh` | Initial production setup | Production (Bahrain) |
+| `scripts/production-bh-deploy.sh` | Deploy to production | Production (Bahrain) |
+| `scripts/production-fr-setup.sh` | Initial production setup | Production (France) |
+| `scripts/production-fr-deploy.sh` | Deploy to production | Production (France) |
+| `scripts/management-setup.sh` | Setup management server | Management |
+| `scripts/app-setup.sh` | Setup applications | Management |
+| `scripts/healthcheck-all.sh` | Full system healthcheck | All |
 
 ## Standard Deployment Workflow
 
 ### 1. Initial Setup (First Time Only)
 ```bash
 # Run setup script for the target environment
-./staging-setup.sh
+scripts/staging-setup.sh
 # or
-./production-bh-setup.sh
+scripts/production-bh-setup.sh
 ```
 
 This will:
@@ -40,19 +41,19 @@ This will:
 ### 2. Regular Deployments
 ```bash
 # Deploy to staging
-./staging-deploy.sh
+scripts/staging-deploy.sh
 
 # Deploy to production (Bahrain)
-./production-bh-deploy.sh
+scripts/production-bh-deploy.sh
 
 # Deploy to production (France)
-./production-fr-deploy.sh
+scripts/production-fr-deploy.sh
 ```
 
 ### 3. Application Updates
 ```bash
 # Update applications on management server
-./app-setup.sh
+scripts/app-setup.sh
 ```
 
 ## Manual Ansible Commands

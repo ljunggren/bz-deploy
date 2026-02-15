@@ -3,9 +3,9 @@
 # Rolls back from Node.js 24.x to 20.x if upgrade fails
 #
 # Usage:
-#   ./staging-nodejs-rollback.sh
-#   ./production-fr-nodejs-rollback.sh
-#   ./production-bh-nodejs-rollback.sh
+#   scripts/staging-nodejs-rollback.sh
+#   scripts/production-fr-nodejs-rollback.sh
+#   scripts/production-bh-nodejs-rollback.sh
 
 - name: Rollback Node.js to v20.x
   hosts: staging-bh:production-bh:production-fr:staging-bh-next

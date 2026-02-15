@@ -87,21 +87,24 @@ Located in `group_vars/`, defining environment-specific settings:
 
 ## Deployment Scripts
 
+All scripts are in the `scripts/` directory.
+
 | Script | Purpose | Inventory |
 | :--- | :--- | :--- |
-| `staging-deploy.sh` | Deploy to staging | staging-bh |
-| `staging-deploy-next.sh` | Deploy to staging-next | staging-bh-next |
-| `production-bh-deploy.sh` | Deploy to ai server | production-bh |
-| `production-fr-deploy.sh` | Deploy to eu server | production-fr |
-| `production-bh-setup.sh` | Initial ai server setup | production-bh |
-| `production-fr-setup.sh` | Initial eu server setup | production-fr |
-| `management-setup.sh` | Management server setup | management-bh |
-| `staging-nodejs-upgrade.sh` | Node.js upgrade (staging) | staging-bh |
-| `production-fr-nodejs-upgrade.sh` | Node.js upgrade (eu) | production-fr |
-| `production-bh-nodejs-upgrade.sh` | Node.js upgrade (ai) | production-bh |
-| `staging-nodejs-rollback.sh` | Node.js rollback (staging) | staging-bh |
-| `production-fr-nodejs-rollback.sh` | Node.js rollback (eu) | production-fr |
-| `production-bh-nodejs-rollback.sh` | Node.js rollback (ai) | production-bh |
+| `scripts/staging-deploy.sh` | Deploy to staging | staging-bh |
+| `scripts/staging-deploy-next.sh` | Deploy to staging-next | staging-bh-next |
+| `scripts/production-bh-deploy.sh` | Deploy to ai server | production-bh |
+| `scripts/production-fr-deploy.sh` | Deploy to eu server | production-fr |
+| `scripts/production-bh-setup.sh` | Initial ai server setup | production-bh |
+| `scripts/production-fr-setup.sh` | Initial eu server setup | production-fr |
+| `scripts/management-setup.sh` | Management server setup | management-bh |
+| `scripts/staging-nodejs-upgrade.sh` | Node.js upgrade (staging) | staging-bh |
+| `scripts/production-fr-nodejs-upgrade.sh` | Node.js upgrade (eu) | production-fr |
+| `scripts/production-bh-nodejs-upgrade.sh` | Node.js upgrade (ai) | production-bh |
+| `scripts/staging-nodejs-rollback.sh` | Node.js rollback (staging) | staging-bh |
+| `scripts/production-fr-nodejs-rollback.sh` | Node.js rollback (eu) | production-fr |
+| `scripts/production-bh-nodejs-rollback.sh` | Node.js rollback (ai) | production-bh |
+| `scripts/healthcheck-all.sh` | Full system healthcheck | all |
 
 ---
 

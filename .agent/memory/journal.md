@@ -1,5 +1,69 @@
 # Project Journal
 
+## 2026-02-14
+
+### Session: v11.0.21 Production Deploy
+
+**Work Completed:**
+- Ran full system healthcheck — 16/16 passed, all green
+- Checked production error logs:
+  - AI prod: Mongoose 8 callback errors (`Query.prototype.exec() no longer accepts a callback`) on `updateOne` calls — known issue, addressed by patch
+  - EU prod: Clean error log
+- Deployed v11.0.21 to both production servers (EU first, then AI)
+- Verified via `/api/version` endpoint — both confirmed v11.0.21
+
+**Final State:**
+| Server | Version | DB Server | Node.js | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| staging-bh | v11.0.21 | db1bh.boozang.com | v24.13.0 | Running |
+| eu.boozang.com | v11.0.21 | db1fr.boozang.com | v24.13.0 | Running |
+| ai.boozang.com | v11.0.21 | db1bh.boozang.com | v24.13.0 | Running |
+
+**Discovered:**
+- `/api/version` endpoint available on all servers — use for post-deploy verification instead of SSH
+
+**Open Items:**
+- Commit repo reorganization (scripts moved to `scripts/`, old scripts to `scripts/old/`)
+- Clean up bz-dist branch naming (master → main)
+- Old DB servers (db1be2, db1de) pending deletion
+
+---
+
+## 2026-02-07
+
+### Session: Production MongoDB 8.0 Cutover — Complete
+
+**Work Completed:**
+- Deployed MongoDB 8.0 connection strings to all production environments
+- Fixed authentication issues (three iterations on EU prod — should have used staging):
+  - v11.0.17: hostnames only → auth required error
+  - v11.0.18: added credentials → auth failed (wrong authSource)
+  - v11.0.19: added `?authSource=admin` → working
+- Fixed missed staging configs (`staging-next.js`, `staging-be.js` used raw IP `54.39.178.1`)
+- Released v11.0.20 with staging fixes, deployed to staging-bh
+- Verified backup cron jobs running on both DB servers (hourly + daily)
+
+**Final State:**
+| Server | Version | DB Server | Status |
+| :--- | :--- | :--- | :--- |
+| staging-bh | v11.0.20 | db1bh.boozang.com | Running |
+| eu.boozang.com | v11.0.19 | db1fr.boozang.com | Running |
+| ai.boozang.com | v11.0.19 | db1bh.boozang.com | Running |
+
+**Lessons Learned:** See `../../../.claude/projects/-Users-matsljunggren-Workspace-bz-deploy/memory/deployment-lessons.md`
+- Always deploy staging first before production
+- MongoDB 8.0 auth needs credentials + authSource=admin
+- Search configs by IP AND hostname when migrating
+- Must run release (bz → bz-dist) before deploy
+- pm2 flush before reading error logs
+- Check stdout for "Connecting to db" to verify connection
+
+**Next Steps:**
+- Node.js 24 upgrade (staging → EU → AI)
+- Clean up bz-dist branch naming (master → main)
+
+---
+
 ## 2026-02-06
 
 ### Session: MongoDB 8.0 Cutover Preparation

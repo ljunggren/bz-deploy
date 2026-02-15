@@ -3,9 +3,9 @@
 # Upgrades Node.js from 20.x to 24.x on traffic servers
 #
 # Usage:
-#   ./staging-nodejs-upgrade.sh        # Staging first
-#   ./production-fr-nodejs-upgrade.sh  # EU server
-#   ./production-bh-nodejs-upgrade.sh  # AI server (last)
+#   scripts/staging-nodejs-upgrade.sh        # Staging first
+#   scripts/production-fr-nodejs-upgrade.sh  # EU server
+#   scripts/production-bh-nodejs-upgrade.sh  # AI server (last)
 
 - name: Upgrade Node.js to v24.x
   hosts: staging-bh:production-bh:production-fr:staging-bh-next
