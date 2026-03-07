@@ -72,6 +72,7 @@
     chdir: "{{ path_to_app }}"
   environment:
     NODE_ENV: "{{ node_env }}"
+    ENABLE_MCP_SERVER: "{{ enable_mcp_server | default('false') }}"
   become_user: ubuntu
 
 

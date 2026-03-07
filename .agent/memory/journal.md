@@ -25,7 +25,7 @@
 **Open Items:**
 - Commit repo reorganization (scripts moved to `scripts/`, old scripts to `scripts/old/`)
 - Clean up bz-dist branch naming (master → main)
-- Old DB servers (db1be2, db1de) pending deletion
+- ~~Old DB servers (db1be2, db1de)~~ — deleted, repo references cleaned up (2026-03-07)
 
 ---
 

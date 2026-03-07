@@ -145,10 +145,6 @@ Database servers managed by `database.yml` playbook:
 - **db1bh.boozang.com** - MongoDB 8.0.17 on Ubuntu 22.04 (serves ai server + staging)
 - **db1fr.boozang.com** - MongoDB 8.0.17 on Ubuntu 22.04 (serves eu server)
 
-Old servers (CentOS 7, MongoDB 5.0.4) still running but no longer used by app:
-- `db1be2.boozang.com` (old BH)
-- `db1de.boozang.com` (old EU)
-
 ### DNS
 
 Managed externally via domain registrar/Cloudflare.

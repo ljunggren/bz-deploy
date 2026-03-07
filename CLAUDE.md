@@ -129,3 +129,10 @@ For deployment issues or questions, refer to:
 - **Required gh user:** `ljunggren`
 - Before any `git push`, verify the active gh account: `gh auth status 2>&1 | grep 'Active account: true' -B3 | head -1`
 - If the active account is not `ljunggren`, run `gh auth switch --user ljunggren` before pushing.
+
+## Escalation Levels
+
+- **L0 — Autonomous:** Reading files, checking inventory structure, reviewing playbook syntax. Just do it.
+- **L1 — Proceed, tell me:** Updating variable files, adjusting non-production config. Do it, but explain what changed.
+- **L2 — Propose first:** Modifying playbooks, changing Ansible roles, altering staging environments. Show the plan first.
+- **L3 — Full stop:** Anything touching production inventory, deployment scripts, SSH keys, or server access. Stop and wait for approval.

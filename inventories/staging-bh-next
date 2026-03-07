@@ -4,6 +4,7 @@ stg1bh.boozang.com ansible_ssh_user=ubuntu
 [staging-bh-next:vars]
 ansible_python_interpreter=/usr/bin/python3
 node_env=staging-next
+enable_mcp_server=true
 domain_name=staging-bh.boozang.com
 host_dns_name=staging-bh.boozang.com
 server_name=staging-bh.boozang.com
