@@ -67,12 +67,9 @@
 
 - name: Start Node.js app
   tags: deploy, fastdeploy, restart
-  command: pm2 start server.js
+  shell: NODE_ENV={{ node_env }} ENABLE_MCP_SERVER={{ enable_mcp_server | default('false') }} pm2 start server.js --update-env
   args:
     chdir: "{{ path_to_app }}"
-  environment:
-    NODE_ENV: "{{ node_env }}"
-    ENABLE_MCP_SERVER: "{{ enable_mcp_server | default('false') }}"
   become_user: ubuntu
 
 

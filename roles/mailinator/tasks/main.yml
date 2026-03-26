@@ -1,0 +1,73 @@
+- name: Create mailinator directory
+  tags: deploy
+  file:
+    path: /var/www/bz-mailinator
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Clone or update bz-mailinator
+  tags: deploy
+  git:
+    repo: https://github.com/ljunggren/bz-mailinator
+    dest: /var/www/bz-mailinator
+    accept_hostkey: yes
+    force: yes
+    version: main
+  become_user: ubuntu
+
+- name: Install dependencies
+  tags: deploy
+  npm:
+    path: /var/www/bz-mailinator
+    state: present
+  become_user: ubuntu
+
+- name: Stop mailinator if running
+  tags: deploy, restart
+  command: pm2 stop bz-mailinator
+  ignore_errors: yes
+  become_user: ubuntu
+
+- name: Start mailinator with PM2
+  tags: deploy, restart
+  shell: SMTP_PORT={{ mailinator_smtp_internal_port }} API_PORT={{ mailinator_api_port }} pm2 start server.js --name bz-mailinator --update-env
+  args:
+    chdir: /var/www/bz-mailinator
+  become_user: ubuntu
+
+- name: Allow SMTP port 25 through UFW
+  tags: deploy, restart
+  ufw:
+    rule: allow
+    port: '25'
+    proto: tcp
+
+- name: Redirect port 25 to mailinator SMTP port
+  tags: deploy, restart
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: "25"
+    jump: REDIRECT
+    to_ports: "{{ mailinator_smtp_internal_port }}"
+    comment: "bz-mailinator SMTP redirect"
+  notify: save iptables
+
+- name: Setup Nginx for mailinator
+  tags: deploy, nginx
+  template:
+    src: mailinator_nginx.j2
+    dest: /etc/nginx/sites-available/bz-mailinator
+  notify: restart nginx
+
+- name: Enable mailinator Nginx site
+  tags: deploy, nginx
+  file:
+    src: /etc/nginx/sites-available/bz-mailinator
+    dest: /etc/nginx/sites-enabled/bz-mailinator
+    state: link
+  notify: restart nginx
+

@@ -1,0 +1,11 @@
+---
+- name: Deploy bz-mailinator on staging
+  hosts: staging-bh
+  become: yes
+  vars:
+    mailinator_smtp_port: 25
+    mailinator_smtp_internal_port: 2525
+    mailinator_api_port: 3025
+    mailinator_domain: testmail.boozang.com
+  roles:
+    - mailinator

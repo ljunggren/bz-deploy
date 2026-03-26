@@ -1,0 +1,8 @@
+- name: restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: save iptables
+  shell: iptables-save > /etc/iptables/rules.v4
+  ignore_errors: yes
