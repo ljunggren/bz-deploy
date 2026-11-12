@@ -3,6 +3,7 @@ prd1fr.boozang.com ansible_ssh_user=ubuntu
 
 [production-fr:vars]
 node_env=production-fr
+enable_mcp_server=true
 
 ; domain_name=prd1fr.boozang.com
 ; host_dns_name=prd1fr.boozang.com
