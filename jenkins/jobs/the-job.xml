@@ -1,0 +1,141 @@
+<?xml version="1.1" encoding="UTF-8"?><project>
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH</name>
+          <defaultValue>tmp</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TEST</name>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORKERS</name>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>FILTER</name>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>NUMBER</name>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ENV</name>
+          <defaultValue>0</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXEMODE</name>
+          <defaultValue>dynamic</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>  #!/usr/bin/env bash                                                                                                                                                                 
+  set -o pipefail
+                                                                                                                                                                                      
+  # ── Configuration ─────────────────────────────────────────────         
+  BASE=&quot;https://staging-bh.boozang.com&quot;
+  TOKEN=&quot;@@BZ_PROJECT_TOKEN@@&quot;
+  PROJECT=&quot;6515cd7f81bcda470a5ef8db&quot;
+  ENV=${ENV:-0}
+  SELF=0
+  GROUP=&quot;&quot;
+  SCOPE=&quot;&quot;
+  PARAMETER=&quot;&quot;
+  SCHEDULE=&quot;&quot;
+  TMPDB=true
+  IMAGE=&quot;styrman/boozang-runner&quot;
+
+  # ── Input summary ─────────────────────────────────────────────
+  echo &quot;=== Boozang Test Run ===&quot;
+  echo &quot;Image:    ${IMAGE}&quot;
+  echo &quot;Branch:   ${BRANCH}&quot;
+  echo &quot;Test:     ${TEST}&quot;
+  echo &quot;Workers:  ${WORKERS}&quot;
+  echo &quot;Filter:   ${FILTER}&quot;
+  echo &quot;Build:    ${BUILD_NUMBER}&quot;
+  echo &quot;Exemode:  ${EXEMODE}&quot;
+  echo &quot;Tmpdb:    ${TMPDB}&quot;
+  echo &quot;========================&quot;
+
+  # ── Cleanup function ─────────────────────────────────────────
+  cleanup() {
+    echo &quot;Stopping worker containers...&quot;
+    for (( i=1; i&lt;=WORKERS; i++ )); do
+      docker stop &quot;bzworkern${i}&quot; 2&gt;/dev/null &amp;&amp; echo &quot;  Stopped worker ${i}&quot; || true
+    done
+    docker rm -f $(docker ps -aq --filter &quot;name=bzworkern&quot;) 2&gt;/dev/null || true
+  }
+  trap cleanup EXIT
+
+  # ── Remove stale containers from previous runs ───────────────
+  cleanup
+
+  # ── Clean up old logs ─────────────────────────────────────────
+  rm -f out_${BUILD_NUMBER}_*.log
+  find . -name &quot;out_*_*.log&quot; -mtime +7 -delete 2&gt;/dev/null || true
+
+  # ── Build worker URL ──────────────────────────────────────────
+  worker_url() {
+    local key=$1
+    local suffix=$2
+    local url=&quot;${BASE}/extension&quot;
+    url+=&quot;?token=${TOKEN}${PROJECT}&quot;
+    url+=&quot;&amp;number=${NUMBER}&quot;
+    url+=&quot;&amp;total=${WORKERS}&quot;
+    url+=&quot;&amp;filter=${FILTER}&quot;
+    url+=&quot;&amp;group=${GROUP}&quot;
+    url+=&quot;&amp;scope=${SCOPE}&quot;
+    url+=&quot;&amp;parameter=${PARAMETER}&quot;
+    url+=&quot;&amp;env=${ENV}&quot;
+    url+=&quot;&amp;key=${key}&quot;
+    url+=&quot;&amp;self=${SELF}&quot;
+    url+=&quot;&amp;exemode=${EXEMODE}&quot;
+    [[ &quot;${TMPDB}&quot; == &quot;false&quot; ]] &amp;&amp; url+=&quot;&amp;tmpDb=false&quot;
+    url+=&quot;#${PROJECT}/${BRANCH}${suffix}&quot;
+    echo &quot;$url&quot;
+  }
+
+  # ── Start worker containers ──────────────────────────────────
+  for (( i=2; i&lt;=WORKERS; i++ )); do
+    echo &quot;Starting worker ${i}...&quot;
+    nohup docker run --rm --init \
+      -v &quot;$(pwd):/var/boozang/&quot; \
+      --name=&quot;bzworkern${i}&quot; \
+      &quot;${IMAGE}&quot; \
+      &quot;$(worker_url ${i} &apos;&apos;)&quot; \
+      &gt; &quot;out_${BUILD_NUMBER}_${i}.log&quot; 2&gt;&amp;1 &amp;
+  done
+
+  # ── Start master (worker 1) ──────────────────────────────────
+  echo &quot;Starting master (worker 1)...&quot;
+  docker run --rm --init \
+    -v &quot;$(pwd):/var/boozang/&quot; \
+    --name=&quot;bzworkern1&quot; \
+    &quot;${IMAGE}&quot; \
+    &quot;$(worker_url 1 &quot;/${TEST}/run?schedule=${SCHEDULE}&quot;)&quot; \
+    2&gt;&amp;1 | tee &quot;out_${BUILD_NUMBER}_1.log&quot;</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

@@ -1,0 +1,192 @@
+<?xml version="1.1" encoding="UTF-8"?><flow-definition plugin="workflow-job@1385.vb_58b_86ea_fff1">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2175.v76a_fff0a_2618"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2175.v76a_fff0a_2618">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>BRANCH</string>
+        <string>FILTER</string>
+        <string>TEST</string>
+        <string>WORKERS</string>
+        <string>EXEMODE</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description>Full release pipeline on the DEV runner image. Stage list is identical to 'The pipeline'.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH</name>
+          <defaultValue>tmp</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TEST</name>
+          <defaultValue>m115/t1</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORKERS</name>
+          <defaultValue>4</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>FILTER</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXEMODE</name>
+          <defaultValue>dynamic</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3883.vb_3ff2a_e3eea_f">
+    <script>pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH',  defaultValue: 'tmp')
+        string(name: 'TEST',    defaultValue: 'm115/t1')
+        string(name: 'WORKERS', defaultValue: '4')
+        string(name: 'FILTER',  defaultValue: '')
+        string(name: 'EXEMODE', defaultValue: 'dynamic')
+    }
+
+    stages {
+        stage('Setup users') {
+            steps {
+                build job: 'The job - dev',
+                      parameters: [
+                          string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                          string(name: 'TEST',    value: &quot;m115/t2&quot;),
+                          string(name: 'WORKERS', value: &quot;${params.WORKERS}&quot;),
+                          string(name: 'FILTER',  value: &quot;${params.FILTER}&quot;),
+                          string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                          string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                      ]
+            }
+        }
+
+        stage('Run Smoke tests') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m82/t3&quot;),
+                              string(name: 'WORKERS', value: &quot;${params.WORKERS}&quot;),
+                              string(name: 'FILTER',  value: &quot;${params.FILTER}&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+
+        stage('Run phase 1 tests') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m41/t1&quot;),
+                              string(name: 'WORKERS', value: &quot;${params.WORKERS}&quot;),
+                              string(name: 'FILTER',  value: &quot;modeltests&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+
+        stage('Run form fill tests') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m41/t1&quot;),
+                              string(name: 'WORKERS', value: &quot;${params.WORKERS}&quot;),
+                              string(name: 'FILTER',  value: &quot;formtests&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+
+        stage('Not model-based') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m82/t8&quot;),
+                              string(name: 'WORKERS', value: &quot;1&quot;),
+                              string(name: 'FILTER',  value: &quot;&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+
+        stage('Phase 3') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m82/t25&quot;),
+                              string(name: 'WORKERS', value: &quot;${params.WORKERS}&quot;),
+                              string(name: 'FILTER',  value: &quot;&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+
+        stage('Claude') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    build job: 'The job - dev',
+                          parameters: [
+                              string(name: 'BRANCH',  value: &quot;${params.BRANCH}&quot;),
+                              string(name: 'TEST',    value: &quot;m82/t28&quot;),
+                              string(name: 'WORKERS', value: &quot;1&quot;),
+                              string(name: 'FILTER',  value: &quot;&quot;),
+                              string(name: 'NUMBER',  value: &quot;${env.BUILD_NUMBER}&quot;),
+                              string(name: 'EXEMODE', value: &quot;${params.EXEMODE}&quot;)
+                          ]
+                }
+            }
+        }
+    }
+
+    // --- Always run this cleanup block at the very end ---
+    post {
+        always {
+            echo &quot;Running final cleanup...&quot;
+            sh '''
+                echo &quot;Number of Chrome processes before cleanup&quot;
+                sudo ps -ef | grep chrome | wc -l
+                sudo pkill chrome || true
+                echo &quot;Number of Chrome processes after cleanup&quot;
+                sudo ps -ef | grep chrome | wc -l
+                echo &quot;Cleanup complete.&quot;
+            '''
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
