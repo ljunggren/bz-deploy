@@ -1,3 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")/.."
-ansible-playbook -i inventories/production-bh site.yml --tags=deploy
+# Deploy a named release:  production-bh-deploy.sh v11.2.4
+# With no argument, deploys the tip of bz-dist master.
+RELEASE_ARG=""
+[ -n "$1" ] && RELEASE_ARG="-e release=$1"
+ansible-playbook -i inventories/production-bh site.yml --tags=deploy $RELEASE_ARG

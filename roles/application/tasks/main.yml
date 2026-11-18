@@ -27,7 +27,7 @@
 
 - name: Fetch the application source
   tags: deploy, fastdeploy
-  git: repo={{ git_repo }} dest={{ path_to_app }} accept_hostkey=yes force=yes version={{ branch }}
+  git: repo={{ git_repo }} dest={{ path_to_app }} accept_hostkey=yes force=yes version={{ release }}
   become_user: ubuntu
 
 

@@ -7,9 +7,20 @@ github_username: "ljunggren"  # Replace with your GitHub username
 github_repository: "ljunggren/bz-dist"  # Replace with your GitHub username and repository
 git_repo: ssh://git@github.com/ljunggren/bz-dist
 
-# Deployment branch in bz-dist
+# What to deploy from bz-dist.
+#
+# Deployment is release-based: pass an immutable tag so an environment is
+# pointed at a named release and staging can be proven to have run what prod
+# will run.
+#
+#   bash scripts/staging-deploy-next.sh v11.2.4
+#   bash scripts/production-bh-deploy.sh v11.2.4
+#
+# `branch` is the fallback used when no release is given, so an unqualified
+# deploy behaves as before and takes the tip of bz-dist master.
 
 branch: master
+release: "{{ branch }}"
 path_to_app: /var/www/bz-dist
 
 # NodeJS
