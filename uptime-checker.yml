@@ -1,0 +1,14 @@
+---
+- name: Deploy uptime checker on management server
+  hosts: management-bh
+  become: yes
+  vars:
+    uptime_checker_slack_webhook: ""  # override with: --extra-vars "uptime_checker_slack_webhook=https://hooks.slack.com/..."
+    uptime_checker_notify_email: mats.ljunggren@boozang.com
+    uptime_checker_urls:
+      - https://ai.boozang.com
+      - https://eu.boozang.com
+      - https://staging-bh.boozang.com
+      - https://boozang.com
+  roles:
+    - uptime-checker

@@ -1,0 +1,55 @@
+---
+- name: Install mailutils
+  apt:
+    name: mailutils
+    state: present
+    update_cache: no
+
+- name: Force postfix to use IPv4 (IPv6 lacks PTR record, Gmail rejects it)
+  lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: '^inet_protocols'
+    line: 'inet_protocols = ipv4'
+  notify: restart postfix
+
+- name: Install uptime check script
+  template:
+    src: uptime-check.sh.j2
+    dest: "{{ uptime_checker_script_path }}"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create log file
+  file:
+    path: "{{ uptime_checker_log_path }}"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Schedule uptime check cron job
+  cron:
+    name: uptime-checker
+    job: "{{ uptime_checker_script_path }} >> {{ uptime_checker_log_path }} 2>&1"
+    user: root
+    minute: "{{ uptime_checker_interval.split()[0] }}"
+    hour: "{{ uptime_checker_interval.split()[1] }}"
+    day: "{{ uptime_checker_interval.split()[2] }}"
+    month: "{{ uptime_checker_interval.split()[3] }}"
+    weekday: "{{ uptime_checker_interval.split()[4] }}"
+
+- name: Install logrotate config for uptime checker
+  copy:
+    dest: /etc/logrotate.d/uptime-checker
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      {{ uptime_checker_log_path }} {
+        weekly
+        rotate 4
+        compress
+        missingok
+        notifempty
+      }

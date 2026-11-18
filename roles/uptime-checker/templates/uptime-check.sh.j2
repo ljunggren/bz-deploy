@@ -1,0 +1,41 @@
+#!/bin/bash
+# Uptime checker - managed by Ansible
+
+URLS=(
+{% for url in uptime_checker_urls %}
+  "{{ url }}"
+{% endfor %}
+)
+
+SLACK_WEBHOOK="{{ uptime_checker_slack_webhook }}"
+NOTIFY_EMAIL="{{ uptime_checker_notify_email }}"
+TIMEOUT={{ uptime_checker_timeout }}
+LOG="{{ uptime_checker_log_path }}"
+
+log() {
+  echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $1"
+}
+
+notify() {
+  local msg="$1"
+  log "$msg"
+
+  if [ -n "$SLACK_WEBHOOK" ]; then
+    curl -s -X POST "$SLACK_WEBHOOK" \
+      -H 'Content-type: application/json' \
+      -d "{\"text\":\"$msg\"}" > /dev/null
+  fi
+
+  if [ -n "$NOTIFY_EMAIL" ]; then
+    echo "$msg" | mail -s "Uptime alert: $msg" "$NOTIFY_EMAIL"
+  fi
+}
+
+for url in "${URLS[@]}"; do
+  status=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" "$url" 2>/dev/null)
+  if [ "$status" = "200" ]; then
+    log "OK $url"
+  else
+    notify "DOWN: $url (HTTP $status)"
+  fi
+done
